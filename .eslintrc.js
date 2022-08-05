@@ -28,5 +28,6 @@ module.exports = {
       1,
       { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
     ],
+    'react/no-unescaped-entities': 0,
   },
 };
