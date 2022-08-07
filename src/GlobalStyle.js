@@ -52,6 +52,11 @@ table {
 * {
   box-sizing: border-box;
 }
+html, body, div#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
 body {
   font-weight: 300;
   font-family: 'Source Sans Pro', sans-serif;
