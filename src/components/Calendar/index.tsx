@@ -1,6 +1,16 @@
 import styled from 'styled-components';
 import moment from 'moment';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { useEffect, useState } from 'react';
+import DatesBoard from './DatesBoard';
+
+export interface IDates {
+  id: number;
+  month: string;
+  date: number;
+  color?: string;
+  fullDate: string;
+}
 
 const Container = styled.div`
   display: flex;
@@ -92,6 +102,7 @@ const makeDateList = (month: moment.Moment) => {
       arr.push({
         id,
         date,
+        month: tempDate.format('M'),
         color: getColor(tempDate.day()),
         fullDate: tempDate.format('YYYY-MM-DD'),
       });
@@ -115,15 +126,47 @@ const days: { id: number; ko: string; en: string; color?: string }[] = [
   { id: 6, ko: '토', en: 'Sat', color: getColor(6) },
 ];
 
+const initTodos = {
+  '8-2': [
+    { id: 1, job: '1' },
+    { id: 2, job: '2' },
+  ],
+  '8-3': [{ id: 3, job: '3' }],
+};
+
 const Calendar = () => {
-  const [dates, setDates] = useState<
-    { id: number; date: number; color?: string; fullDate: string }[][]
-  >([]);
+  const [dates, setDates] = useState<IDates[][]>([]);
   const [month, setMonth] = useState(moment());
   const [move, setMove] = useState(0);
+  const [toDos, setToDos] = useState(initTodos);
 
   const onChangeMonth = (v: number) => {
     setMove(move + v);
+  };
+
+  const onDragEnd = (info: DropResult) => {
+    const { destination, source } = info;
+    // 제자리에 두는 경우
+    if (!destination) return;
+
+    setToDos((oldToDos) => {
+      const copied = JSON.parse(JSON.stringify(oldToDos));
+      // 같은 droppableId
+      if (source.droppableId === destination.droppableId) {
+        const board = copied[destination.droppableId.replace('dr-', '')];
+        const task = board.splice(source.index, 1);
+        board.splice(destination?.index, 0, task[0]);
+      }
+      // 다른 droppableId
+      else {
+        const sourceBoard = copied[source.droppableId.replace('dr-', '')];
+        const destinationBoard =
+          copied[destination.droppableId.replace('dr-', '')];
+        const task = sourceBoard.splice(source.index, 1);
+        destinationBoard.splice(destination?.index, 0, task[0]);
+      }
+      return copied;
+    });
   };
 
   useEffect(() => {
@@ -133,42 +176,36 @@ const Calendar = () => {
   }, [move]);
 
   return (
-    <Container>
-      <Header>
-        <ArrowButton onClick={() => onChangeMonth(-1)}>
-          &lt;
-          <div />
-        </ArrowButton>
-        <ArrowButton onClick={() => onChangeMonth(1)}>
-          &gt;
-          <div />
-        </ArrowButton>
-        {month.format('YYYY년 MM월')}
-        &nbsp; (오늘: {today.format('YYYY년 MM월 DD일')})
-      </Header>
-      <Content>
-        <Dates bgColor="gray">
-          {days.map((d) => (
-            <Date key={d.id} color={d.color}>
-              {d.ko}
-            </Date>
-          ))}
-        </Dates>
-        <Weeks>
-          {dates.map((week, i) => (
-            <Dates key={i} bgColor="yellow" isWeek={true}>
-              {week.map((d) => (
-                <Date key={d.id} color={d.color}>
-                  {d.date}
-                  <br />
-                  {d.fullDate === today.format('YYYY-MM-DD') && '오늘!'}
-                </Date>
-              ))}
-            </Dates>
-          ))}
-        </Weeks>
-      </Content>
-    </Container>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Container>
+        <Header>
+          <ArrowButton onClick={() => onChangeMonth(-1)}>
+            &lt;
+            <div />
+          </ArrowButton>
+          <ArrowButton onClick={() => onChangeMonth(1)}>
+            &gt;
+            <div />
+          </ArrowButton>
+          {month.format('YYYY년 MM월')}
+          &nbsp; (오늘: {today.format('YYYY년 MM월 DD일')})
+        </Header>
+        <Content>
+          <Dates bgColor="gray">
+            {days.map((d) => (
+              <Date key={d.id} color={d.color}>
+                {d.ko}
+              </Date>
+            ))}
+          </Dates>
+          <DatesBoard
+            dates={dates}
+            today={today.format('YYYY-MM-DD')}
+            toDos={toDos}
+          />
+        </Content>
+      </Container>
+    </DragDropContext>
   );
 };
 
