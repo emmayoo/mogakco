@@ -154,6 +154,8 @@ const Calendar = () => {
       // 다른 droppableId
       else {
         const sourceBoard = copied[source.droppableId.replace('dr-', '')];
+        const destinationId = destination.droppableId.replace('dr-', '');
+        if (!copied[destinationId]) copied[destinationId] = [];
         const destinationBoard =
           copied[destination.droppableId.replace('dr-', '')];
         const task = sourceBoard.splice(source.index, 1);
