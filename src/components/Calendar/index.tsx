@@ -74,12 +74,6 @@ const Date = styled.div<{ color?: string }>`
   height: 100%;
 `;
 
-const Weeks = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
-  height: 100%;
-`;
-
 const getColor = (v: number) => {
   if (v === 0) return 'red';
   else if (v === 6) return 'blue';
