@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import styled from 'styled-components';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { IDates } from './index';
+import ScheduleEditor from './ScheduleEditor';
 
 interface IDatesBoardProps {
   dates: IDates[][];
@@ -65,6 +67,9 @@ const Card = styled.div<{ isDragging: boolean }>`
 `;
 
 const DatesBoard = ({ dates, today, toDos }: IDatesBoardProps) => {
+  const [editor, setEditor] = useState<HTMLElement | null>(null);
+  const [isEditorShow, setIsEditorShow] = useState(false);
+
   return (
     <Weeks>
       {dates.map((week, i) => (
@@ -95,6 +100,15 @@ const DatesBoard = ({ dates, today, toDos }: IDatesBoardProps) => {
                               isDragging={snapshot.isDragging}
                               {...magic.dragHandleProps}
                               {...magic.draggableProps}
+                              onClick={(e) => {
+                                if (!isEditorShow) {
+                                  setEditor(e.target as HTMLElement);
+                                  setIsEditorShow(true);
+                                } else {
+                                  setEditor(null);
+                                  setIsEditorShow(false);
+                                }
+                              }}
                             >
                               {toDo.job}
                             </Card>
@@ -109,6 +123,7 @@ const DatesBoard = ({ dates, today, toDos }: IDatesBoardProps) => {
           ))}
         </Dates>
       ))}
+      <ScheduleEditor target={editor} isVisible={isEditorShow} />
     </Weeks>
   );
 };
